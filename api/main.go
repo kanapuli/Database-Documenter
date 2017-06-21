@@ -59,10 +59,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	c := response.session.DB("mydb").C("users")
 	fmt.Println(Credentials)
 	err := c.Find(bson.M{"username": Credentials.Username, "password": Credentials.Password}).One(&mongoRecord)
+	fmt.Println(mongoRecord)
 	if err != nil {
 		json.NewEncoder(w).Encode("{\"reponse\"Record Not found\"}")
 		return
 	}
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+
 	json.NewEncoder(w).Encode(mongoRecord)
 
 }
