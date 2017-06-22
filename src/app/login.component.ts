@@ -32,21 +32,18 @@ export class LoginComponent {
             this.payLoad.password = this.password;
             console.log(this.payLoad);
             this.service.postLogin(this.payLoad)
-                .subscribe(res => this.response = res);
-            console.log("status: " + this.response);
-            if (this.response === 200) {
-                this.loginSuceed = true;
-                this.router.navigate(['dashboard']);
-            } else {
-                this.loginSuceed = false;
-            }
+                .subscribe((res) => {
+                    if (res === 200) {
+                        console.log('Enterd here');
+                        this.loginSuceed = true;
+                        this.router.navigate(['dashboard']);
+                        sessionStorage.setItem('Token', JSON.stringify(res));
+                    } else {
+                        this.loginSuceed = false;
+                    }
+                });
+
         }
-        /* if (f.valid && this.username === 'kanapuli' && this.password === 'aa') {
-             this.loginSuceed = true;
-             this.router.navigate(['dashboard']);
-         } else {
-             this.loginSuceed = false;
-         }*/
 
     }
 }

@@ -10,6 +10,7 @@ import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -35,7 +36,10 @@ func main() {
 
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/login", Login).Methods("POST")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	methodsOK := handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "OPTIONS"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "access-control-allow-origin"})
+	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(methodsOK, originsOk, headersOk)(router)))
 }
 
 type LoginDetails struct {
@@ -44,6 +48,9 @@ type LoginDetails struct {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
+	// if r.Method == "OPTIONS" {
+	// 	return
+	// }
 	//Get The Mongo Session First
 	dbClient := &DbRequest{}
 	dbClient.url = mongoUrl
@@ -61,12 +68,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	err := c.Find(bson.M{"username": Credentials.Username, "password": Credentials.Password}).One(&mongoRecord)
 	fmt.Println(mongoRecord)
 	if err != nil {
-		json.NewEncoder(w).Encode("{\"reponse\"Record Not found\"}")
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-
+	w.Header().Set("Access-Control-Allow-Headers", "x-requested-with, Content-Type, origin, authorization, accept, client-security-token, access-control-allow-origin")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(mongoRecord)
 
 }
