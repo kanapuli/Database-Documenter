@@ -18,9 +18,9 @@ const mongoUrl = "mongodb://127.0.0.1:27017"
 
 //Person - struct to hold the user details
 type Person struct {
+	Id         string
 	Name       string
 	UserName   string
-	Password   string
 	IsAdmin    bool
 	IsApprover bool
 }
@@ -40,6 +40,7 @@ func main() {
 	originsOk := handlers.AllowedOrigins([]string{"*"})
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "access-control-allow-origin"})
 	log.Fatal(http.ListenAndServe(":8080", handlers.CORS(methodsOK, originsOk, headersOk)(router)))
+
 }
 
 type LoginDetails struct {
@@ -48,9 +49,7 @@ type LoginDetails struct {
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	// if r.Method == "OPTIONS" {
-	// 	return
-	// }
+
 	//Get The Mongo Session First
 	dbClient := &DbRequest{}
 	dbClient.url = mongoUrl
@@ -64,7 +63,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	mongoRecord := Person{}
 	c := response.session.DB("mydb").C("users")
-	fmt.Println(Credentials)
+	//fmt.Println(Credentials)
 	err := c.Find(bson.M{"username": Credentials.Username, "password": Credentials.Password}).One(&mongoRecord)
 	fmt.Println(mongoRecord)
 	if err != nil {
